@@ -1,2 +1,2 @@
-# extract_recipe
-Extract a recipe from a photo for mealie 
+# add_mealie_recipe
+A library for adding recipes to mealie from a picture

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+    <title>Extract recipe</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: row;
+            /* Change flex direction to row */
+            justify-content: center;
+            /* Center items horizontally */
+            text-align: center;
+            /* Center text within the container */
+            margin-top: 20px;
+            /* Add some top margin for spacing */
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            /* Add some bottom margin for spacing */
+        }
+
+
+        /* .left-div, */
+        /* .right-div { */
+        .left-div {
+            flex: 1;
+            text-align: left;
+        }
+
+        .right-div {
+            flex: 1;
+            text-align: left;
+            overflow-x: auto;
+            /* Enable horizontal scrolling if the content overflows */
+            width: auto;
+        }
+
+        #recipeImage {
+            display: none;
+            /* Set a maximum height to prevent large images from expanding the container */
+            width: auto;
+            height: 600px;
+            /* Ensure the image doesn't exceed the container width */
+            align-self: center;
+        }
+
+        #loading {
+            width: 75%;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Extract recipe</h1>
+    <form enctype="multipart/form-data" action="/process" method="post" id="upload-form">
+        <input type="file" name="image" accept="image/*" id="image-input" onchange="previewImage(event)" required>
+        <button type="submit">Process Image</button>
+    </form>
+    <div class="container">
+        <div class="left-div" id="recipe_div">
+            <h2><b>Recipe:</b></h2>
+            <img id="loading"
+                src="http://fishpoopsoup.com/images/pizza_loading.gif">
+            <div id="result"></div>
+        </div>
+
+        <div class="right-div" id="image_div">
+            <h2><b>Image:</b></h2>
+            <img id="recipeImage">
+            <!-- <img id="preview" src="#" alt="Image Preview"> -->
+        </div>
+    </div>
+
+    <script>
+        function previewImage(event) {
+            var input = event.target;
+            var preview = document.getElementById('recipeImage');
+
+            var reader = new FileReader();
+            reader.onload = function () {
+                preview.src = reader.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+        document.getElementById('upload-form').addEventListener('submit', function (e) {
+            document.getElementById('loading').style.display = 'block'
+            e.preventDefault();
+
+            var formData = new FormData(this);
+
+            fetch('http://fishpoopsoup.com/extract_recipe/process', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    document.getElementById('loading').style.display = 'none'
+                    document.getElementById('result').innerHTML = '<p>' + data.message + '</p>';
+                    document.getElementById('result').innerHTML += '<p>' + data.recipe + '</p>';
+                    document.getElementById('result').innerHTML += '<a href="http://fishpoopsoup.com/extract_recipe/' +data.recipe + '">';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('loading').style.display = 'none'
+                    document.getElementById('result').innerHTML = '<p>Error processing image</p>';
+                    document.getElementById('result').innerHTML += '<p>' + error + '</p>';
+
+                });
+        });
+    </script>
+</body>
+
+</html>
