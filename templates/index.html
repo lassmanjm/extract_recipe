@@ -60,13 +60,16 @@
     <h1>Extract recipe</h1>
     <form enctype="multipart/form-data" action="/process" method="post" id="upload-form">
         <input type="file" name="image" accept="image/*" id="image-input" onchange="previewImage(event)" required>
+        <label for="fakeCallCheckbox">
+            <input type="checkbox" id="fakeCallCheckbox" name="fakeCall">
+            Fake Chat GPT Call
+        </label>
         <button type="submit">Process Image</button>
     </form>
     <div class="container">
         <div class="left-div" id="recipe_div">
             <h2><b>Recipe:</b></h2>
-            <img id="loading"
-                src="http://fishpoopsoup.com/images/pizza_loading.gif">
+            <img id="loading" src="http://fishpoopsoup.com/images/pizza_loading.gif">
             <div id="result"></div>
         </div>
 
@@ -94,8 +97,12 @@
             e.preventDefault();
 
             var formData = new FormData(this);
+            var isFakeCall = document.getElementById('fakeCallCheckbox').checked;
 
-            fetch('http://fishpoopsoup.com/extract_recipe/process', {
+            // Build the URL based on the checkbox status
+            var url = isFakeCall ? 'http://fishpoopsoup.com/extract_recipe/fake_process_image' : 'http://fishpoopsoup.com/extract_recipe/process_image';
+
+            fetch(url, {
                 method: 'POST',
                 body: formData
             })
@@ -105,7 +112,7 @@
                     document.getElementById('loading').style.display = 'none'
                     document.getElementById('result').innerHTML = '<p>' + data.message + '</p>';
                     document.getElementById('result').innerHTML += '<p>' + data.recipe + '</p>';
-                    document.getElementById('result').innerHTML += '<a href="http://fishpoopsoup.com/extract_recipe/' +data.recipe + '">';
+                    document.getElementById('result').innerHTML += '<a href="http://fishpoopsoup.com/extract_recipe/' + data.recipe + '">';
                 })
                 .catch(error => {
                     console.error('Error:', error);
