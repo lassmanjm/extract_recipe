@@ -4,81 +4,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-
-    <title>Extract recipe</title>
+    <title>Extract Recipe</title>
     <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         .container {
             display: flex;
-            flex-direction: row;
-            /* Change flex direction to row */
-            justify-content: center;
-            /* Center items horizontally */
+            flex-direction: column;
+            align-items: center;
             text-align: center;
-            /* Center text within the container */
             margin-top: 20px;
-            /* Add some top margin for spacing */
         }
 
         h1 {
             margin-bottom: 20px;
-            /* Add some bottom margin for spacing */
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .upload-form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            align-items: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 75%;
         }
 
 
-        /* .left-div, */
-        /* .right-div { */
-        .left-div {
+        label {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #333;
+            display: block;
+            margin-bottom: 10px;
+            /* Add margin to separate label from textarea */
+        }
+
+        textarea {
+            width: 100%;
+            /* Make the textarea take up 100% of its container width */
+            box-sizing: border-box;
+            /* Include padding and border in the width calculation */
+            padding: 8px;
+            margin-bottom: 10px;
+            resize: vertical;
+            /* Allow vertical resizing of the textarea */
+        }
+
+        input[type="file"] {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #fakeCallCheckbox {
+            margin-top: 10px;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+
+        .recipe-div,
+        .image-div {
             flex: 1;
             text-align: left;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            align-items: left;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: none;
+            margin-bottom: 20px;
+            justify-content: center;
+            width: 75%;
         }
 
-        .right-div {
-            flex: 1;
-            text-align: left;
-            overflow-x: auto;
-            /* Enable horizontal scrolling if the content overflows */
-            width: auto;
-        }
+        /* .recipe-div {
+        } */
 
         #recipeImage {
-            display: none;
-            /* Set a maximum height to prevent large images from expanding the container */
-            width: auto;
-            height: 600px;
-            /* Ensure the image doesn't exceed the container width */
+            width: 75%;
+            /* width: 100%; */
             align-self: center;
+            margin: 0 auto;
+            display: block;
+            width: 100%;
+            /* Allow the image to take up the full width of its container */
         }
 
         #loading {
             width: 75%;
             display: none;
+            margin: 0 auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
         }
     </style>
 </head>
 
 <body>
-    <h1>Extract recipe</h1>
-    <form enctype="multipart/form-data" action="/process" method="post" id="upload-form">
-        <input type="file" name="image" accept="image/*" id="image-input" onchange="previewImage(event)" required>
-        <label for="fakeCallCheckbox">
-            <input type="checkbox" id="fakeCallCheckbox" name="fakeCall" checked=true>
-            Fake Chat GPT Call
-        </label>
-        <button type="submit">Process Image</button>
-    </form>
     <div class="container">
-        <div class="left-div" id="recipe_div">
+        <h1>Extract Recipe</h1>
+        <form enctype="multipart/form-data" action="/process" method="post" id="upload-form" class="upload-form">
+            <label for="image-input">
+                Select Image:
+                <input type="file" name="image" accept="image/*" id="image-input" onchange="previewImage(event)"
+                    required>
+            </label>
+            <label for="fakeCallCheckbox">
+                <input type="checkbox" id="fakeCallCheckbox" name="fakeCall" checked=true>
+                Fake Chat GPT Call
+            </label>
+            <button type="submit">Process Image</button>
+        </form>
+
+        <div class="recipe-div" id="recipe-div">
             <h2><b>Recipe:</b></h2>
-            <img id="loading" src="http://fishpoopsoup.com/images/pizza_loading.gif">
+            <img id="loading" src="http://fishpoopsoup.com/images/pizza_loading.gif" alt="Loading">
             <div id="result"></div>
         </div>
 
-        <div class="right-div" id="image_div">
-            <h2><b>Image:</b></h2>
-            <img id="recipeImage">
-            <!-- <img id="preview" src="#" alt="Image Preview"> -->
+        <div class="image-div" id="image-div">
+            <img id="recipeImage" alt="Recipe Image">
         </div>
+
     </div>
+
 
     <script>
         function previewImage(event) {
@@ -88,7 +169,7 @@
             var reader = new FileReader();
             reader.onload = function () {
                 preview.src = reader.result;
-                preview.style.display = 'block';
+                document.getElementById('image-div').style.display = "block";
             };
             reader.readAsDataURL(input.files[0]);
         }
@@ -99,35 +180,64 @@
             }
             return ''
         }
-        function addSingleFormElement(title, contents, parent) {
-            var input = document.createElement('input');
-            input.type = 'text';
-            input.name = title;
-            input.value = contents;
-
+        function addSingleFormElement(title, contents, parent, rows) {
+            var textarea = document.createElement('textarea');
+            textarea.name = title;
+            textarea.value = contents;
+            textarea.rows = rows;
             if (title) {
                 var label = document.createElement('label');
                 label.textContent = title;
-                label.appendChild(input);
+                label.appendChild(textarea);
                 parent.appendChild(label);
                 return;
             }
-            parent.appendChild(input);
+            parent.appendChild(textarea);
+        }
+        function addMultiFormElement(title, contents_list, parent, rows) {
+            var label = document.createElement('label');
+            label.textContent = title;
+            for (var contents of contents_list) {
+                addSingleFormElement('', contents, label, rows);
+            }
+
+            var addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.textContent = '+';
+            addButton.addEventListener('click', function () {
+                // Temporarily remove the button
+                label.removeChild(addButton);
+
+                // Add a new textarea
+                addSingleFormElement('', '', label, rows);
+
+                // Re-append the button
+                label.appendChild(addButton);
+            });
 
 
+            label.appendChild(addButton);
+            parent.appendChild(label);
         }
         function makeRecipeForm(recipe) {
             var form = document.createElement('form');
+            form.classList.add('recipe-form');
 
-            addSingleFormElement('name', MaybeGetProperty('name', recipe), form)
-            addSingleFormElement('description', MaybeGetProperty('description', recipe), form)
+            addSingleFormElement('name', MaybeGetProperty('name', recipe), form, 3);
+            addSingleFormElement('description', MaybeGetProperty('description', recipe), form, 3);
+            addMultiFormElement('ingredients', MaybeGetProperty('ingredients', recipe), form, 2);
+            addMultiFormElement('steps', MaybeGetProperty('steps', recipe), form, 2);
             return form;
+        }
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block'
+
         }
 
         document.getElementById('upload-form').addEventListener('submit', function (e) {
             document.getElementById('result').innerHTML = ''
-            document.getElementById('loading').style.display = 'block'
-
+            document.getElementById('recipe-div').style.display = 'block';
+            showLoading()
             e.preventDefault();
 
             var formData = new FormData(this);
@@ -143,10 +253,9 @@
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('loading').style.display = 'none'
-                    document.getElementById('result').innerHTML = '<p>' + data.message + '</p>';
+                    // document.getElementById('result').innerHTML += '<p>' + data.recipe + '</p>';
                     document.getElementById('result').appendChild(makeRecipeForm(JSON.parse(data.recipe)))
 
-                    // document.getElementById('result').innerHTML += '<p>' + data.recipe + '</p>';
 
                 })
                 .catch(error => {
@@ -156,6 +265,7 @@
                 });
         });
     </script>
+
 </body>
 
 </html>
