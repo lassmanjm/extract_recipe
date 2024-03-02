@@ -42,7 +42,6 @@
             width: 75%;
         }
 
-
         label {
             margin-top: 10px;
             font-weight: bold;
@@ -52,15 +51,40 @@
             /* Add margin to separate label from textarea */
         }
 
-        textarea {
+        /* textarea {
             width: 100%;
             /* Make the textarea take up 100% of its container width */
+        /* box-sizing: border-box; */
+        /* Include padding and border in the width calculation */
+        /* padding: 8px; */
+        /* padding-right: 8px; */
+        /* resize: vertical; */
+        /* Allow vertical resizing of the textarea */
+        /* } */
+
+        textarea {
+            width: 100%;
             box-sizing: border-box;
-            /* Include padding and border in the width calculation */
-            padding: 8px;
-            margin-bottom: 10px;
             resize: vertical;
-            /* Allow vertical resizing of the textarea */
+            margin-right: 8px;
+            /* Add right margin to create space between textarea and button */
+        }
+
+        /* .form-element {
+            padding-right: 8px;
+            padding: 8px;
+        } */
+        .form-element {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            /* Add margin to create space between form elements */
+        }
+
+        .draggable {
+            cursor: move;
+            /* Set cursor to "move" for draggable elements */
         }
 
         input[type="file"] {
@@ -75,7 +99,6 @@
         }
 
         button {
-            background-color: #4caf50;
             color: white;
             padding: 10px 15px;
             border: none;
@@ -83,6 +106,18 @@
             cursor: pointer;
         }
 
+        .submit-image-button {
+            background-color: #03a9f4;
+
+        }
+
+        .add-button {
+            background-color: #4caf50;
+        }
+
+        .remove-button {
+            background-color: #f44336;
+        }
 
         .recipe-div,
         .image-div {
@@ -99,12 +134,8 @@
             width: 75%;
         }
 
-        /* .recipe-div {
-        } */
-
         #recipeImage {
             width: 75%;
-            /* width: 100%; */
             align-self: center;
             margin: 0 auto;
             display: block;
@@ -118,16 +149,9 @@
             margin: 0 auto;
         }
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        input {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
+        .dragging {
+            border: 2px dashed #4caf50;
+            /* Highlight the textarea being dragged */
         }
     </style>
 </head>
@@ -145,7 +169,7 @@
                 <input type="checkbox" id="fakeCallCheckbox" name="fakeCall" checked=true>
                 Fake Chat GPT Call
             </label>
-            <button type="submit">Process Image</button>
+            <button type="submit" class="submit-image-button">Process Image</button>
         </form>
 
         <div class="recipe-div" id="recipe-div">
@@ -157,9 +181,7 @@
         <div class="image-div" id="image-div">
             <img id="recipeImage" alt="Recipe Image">
         </div>
-
     </div>
-
 
     <script>
         function previewImage(event) {
@@ -173,6 +195,7 @@
             };
             reader.readAsDataURL(input.files[0]);
         }
+
         function MaybeGetProperty(property, json) {
             console.log(json)
             if (json.hasOwnProperty(property)) {
@@ -180,28 +203,74 @@
             }
             return ''
         }
-        function addSingleFormElement(title, contents, parent, rows) {
+
+        // function addSingleFormElement(title, contents, parent, rows, draggable=false) {
+        //     var textarea = document.createElement('textarea');
+        //     textarea.name = title;
+        //     textarea.value = contents;
+        //     textarea.rows = rows;
+        //     textarea.draggable = draggable; // Enable dragging
+        //     if (draggable){
+        //         textarea.classList.add('draggable');
+        //     }
+        //     textarea.addEventListener('dragstart', handleDragStart);
+        //     textarea.addEventListener('dragover', handleDragOver);
+        //     textarea.addEventListener('drop', handleDrop);
+        //     if (title) {
+        //         var label = document.createElement('label');
+        //         label.textContent = title;
+        //         label.appendChild(textarea);
+        //         parent.appendChild(label);
+        //         return;
+        //     }
+        //     parent.appendChild(textarea);
+        // }
+        function addSingleFormElement(title, contents, parent, rows, draggable = false) {
+            form_element = document.createElement('div');
+            form_element.classList.add('form-element');
+            form_element.style.display = 'flex'; // Use Flexbox for vertical alignment
+            form_element.style.alignItems = 'center';
+
             var textarea = document.createElement('textarea');
             textarea.name = title;
             textarea.value = contents;
             textarea.rows = rows;
+
             if (title) {
                 var label = document.createElement('label');
                 label.textContent = title;
                 label.appendChild(textarea);
-                parent.appendChild(label);
-                return;
+                form_element.appendChild(label);
+            } else {
+                form_element.appendChild(textarea);
             }
-            parent.appendChild(textarea);
+
+            if (draggable) {
+                form_element.draggable = true;
+                form_element.classList.add('draggable');
+                var removeButton = document.createElement('button');
+                removeButton.classList.add('remove-button');
+                removeButton.type = 'button';
+                removeButton.textContent = '-';
+                removeButton.addEventListener('click', function () {
+                    // Remove the form_element
+                    parent.removeChild(removeButton.parentNode);
+                });
+                form_element.appendChild(removeButton);
+                form_element.addEventListener('dragstart', handleDragStart);
+                form_element.addEventListener('dragover', handleDragOver);
+                form_element.addEventListener('drop', handleDrop);
+            }
+
+            parent.appendChild(form_element);
         }
+
         function addMultiFormElement(title, contents_list, parent, rows) {
             var label = document.createElement('label');
             label.textContent = title;
-            for (var contents of contents_list) {
-                addSingleFormElement('', contents, label, rows);
-            }
 
             var addButton = document.createElement('button');
+            addButton.classList.add('add-button');
             addButton.type = 'button';
             addButton.textContent = '+';
             addButton.addEventListener('click', function () {
@@ -209,16 +278,22 @@
                 label.removeChild(addButton);
 
                 // Add a new textarea
-                addSingleFormElement('', '', label, rows);
+                addSingleFormElement('', '', label, rows, draggale=true);
 
                 // Re-append the button
                 label.appendChild(addButton);
             });
 
 
+            for (var contents of contents_list) {
+                addSingleFormElement('', contents, label, rows, true);
+            }
+
             label.appendChild(addButton);
+
             parent.appendChild(label);
         }
+
         function makeRecipeForm(recipe) {
             var form = document.createElement('form');
             form.classList.add('recipe-form');
@@ -227,17 +302,18 @@
             addSingleFormElement('description', MaybeGetProperty('description', recipe), form, 3);
             addMultiFormElement('ingredients', MaybeGetProperty('ingredients', recipe), form, 2);
             addMultiFormElement('steps', MaybeGetProperty('steps', recipe), form, 2);
+
             return form;
         }
-        function showLoading() {
-            document.getElementById('loading').style.display = 'block'
 
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
         }
 
         document.getElementById('upload-form').addEventListener('submit', function (e) {
-            document.getElementById('result').innerHTML = ''
+            document.getElementById('result').innerHTML = '';
             document.getElementById('recipe-div').style.display = 'block';
-            showLoading()
+            showLoading();
             e.preventDefault();
 
             var formData = new FormData(this);
@@ -252,20 +328,63 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('loading').style.display = 'none'
+                    document.getElementById('loading').style.display = 'none';
                     // document.getElementById('result').innerHTML += '<p>' + data.recipe + '</p>';
-                    document.getElementById('result').appendChild(makeRecipeForm(JSON.parse(data.recipe)))
-
-
+                    document.getElementById('result').appendChild(makeRecipeForm(JSON.parse(data.recipe)));
                 })
                 .catch(error => {
-                    document.getElementById('loading').style.display = 'none'
+                    document.getElementById('loading').style.display = 'none';
                     console.error('Error parsing JSON:', error);
                     document.getElementById('result').innerHTML = '<p>Error parsing JSON:' + error + '</p>';
                 });
         });
-    </script>
 
+        function handleDragStart(e) {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', null);
+
+            // Add a class to the dragging element
+            this.classList.add('dragging');
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation(); // stops the browser from redirecting.
+            }
+
+            // Get the dragging element
+            var draggedTextarea = document.querySelector('.dragging');
+
+            // If there's a dragging element and it's not the drop target itself
+            if (draggedTextarea && draggedTextarea !== this) {
+                // Insert the dragging element before or after the drop target
+                var rect = this.getBoundingClientRect();
+                var isAfter = e.clientY > rect.top + rect.height / 2;
+
+                if (isAfter) {
+                    this.parentNode.insertBefore(draggedTextarea, this.nextElementSibling);
+                } else {
+                    this.parentNode.insertBefore(draggedTextarea, this);
+                }
+            }
+
+            // Remove the dragging class from all textareas
+            var textareas = document.querySelectorAll('textarea');
+            textareas.forEach(function (textarea) {
+                textarea.classList.remove('dragging');
+            });
+
+            return false;
+        }
+    </script>
 </body>
 
 </html>
