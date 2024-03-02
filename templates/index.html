@@ -61,7 +61,7 @@
     <form enctype="multipart/form-data" action="/process" method="post" id="upload-form">
         <input type="file" name="image" accept="image/*" id="image-input" onchange="previewImage(event)" required>
         <label for="fakeCallCheckbox">
-            <input type="checkbox" id="fakeCallCheckbox" name="fakeCall">
+            <input type="checkbox" id="fakeCallCheckbox" name="fakeCall" checked=true>
             Fake Chat GPT Call
         </label>
         <button type="submit">Process Image</button>
@@ -92,8 +92,42 @@
             };
             reader.readAsDataURL(input.files[0]);
         }
+        function MaybeGetProperty(property, json) {
+            console.log(json)
+            if (json.hasOwnProperty(property)) {
+                return json[property]
+            }
+            return ''
+        }
+        function addSingleFormElement(title, contents, parent) {
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.name = title;
+            input.value = contents;
+
+            if (title) {
+                var label = document.createElement('label');
+                label.textContent = title;
+                label.appendChild(input);
+                parent.appendChild(label);
+                return;
+            }
+            parent.appendChild(input);
+
+
+        }
+        function makeRecipeForm(recipe) {
+            var form = document.createElement('form');
+
+            addSingleFormElement('name', MaybeGetProperty('name', recipe), form)
+            addSingleFormElement('description', MaybeGetProperty('description', recipe), form)
+            return form;
+        }
+
         document.getElementById('upload-form').addEventListener('submit', function (e) {
+            document.getElementById('result').innerHTML = ''
             document.getElementById('loading').style.display = 'block'
+
             e.preventDefault();
 
             var formData = new FormData(this);
@@ -108,18 +142,17 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data)
                     document.getElementById('loading').style.display = 'none'
                     document.getElementById('result').innerHTML = '<p>' + data.message + '</p>';
-                    document.getElementById('result').innerHTML += '<p>' + data.recipe + '</p>';
-                    document.getElementById('result').innerHTML += '<a href="http://fishpoopsoup.com/extract_recipe/' + data.recipe + '">';
+                    document.getElementById('result').appendChild(makeRecipeForm(JSON.parse(data.recipe)))
+
+                    // document.getElementById('result').innerHTML += '<p>' + data.recipe + '</p>';
+
                 })
                 .catch(error => {
-                    console.error('Error:', error);
                     document.getElementById('loading').style.display = 'none'
-                    document.getElementById('result').innerHTML = '<p>Error processing image</p>';
-                    document.getElementById('result').innerHTML += '<p>' + error + '</p>';
-
+                    console.error('Error parsing JSON:', error);
+                    document.getElementById('result').innerHTML = '<p>Error parsing JSON:' + error + '</p>';
                 });
         });
     </script>

@@ -55,10 +55,6 @@ def extract_recipe(image_file: BufferedReader) -> str:
     }
 
     response = json.dumps(requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload).json())
-    print(response)
-    with open("/home/pi/chat_response.txt", "a") as f:
-        f.write(response)
-    # print(type(response))
     return response
 
     

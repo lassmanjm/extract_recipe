@@ -23,7 +23,6 @@ def process(extract_recipe):
         chat_response = extract_recipe(image_file)
         recipe= json.loads(chat_response)["choices"][0]["message"]["content"]
         recipe = recipe[recipe.find("{"):recipe.rfind("}")+1]
-        print(recipe)
 
         # Send the save path in the response
         return jsonify({'message': 'Image processed successfully', 'recipe': recipe})
