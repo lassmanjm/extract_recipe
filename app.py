@@ -33,11 +33,15 @@ def process(extract_recipe):
 @app.route('/extract_recipe')
 def index():
     return render_template('index.html')
+
+# @app.route('/extract_recipetest_drag')
+# def index():
+#     return render_template('test_drag.html')
 # def extract_json_from_response(respone
 
-@app.route('/extract_recipe/<string:recipe_json>')
-def recipe(recipe_json):
-    return render_template("recipe_template.html", recipe=recipe_json)
+# @app.route('/extract_recipe/<string:recipe_json>')
+# def recipe(recipe_json):
+#     return render_template("recipe_template.html", recipe=recipe_json)
 
 @app.route('/extract_recipe/process_image', methods=['POST'])
 def process_image():
@@ -46,6 +50,18 @@ def process_image():
 @app.route('/extract_recipe/fake_process_image', methods=['POST'])
 def fake_process_image():
     return process(fake_extract_recipe)
+
+@app.route('/extract_recipe/process_recipe', methods=['POST'])
+def process_recipe():
+    recipe=request.form.to_dict()
+    # print("name: ", recipe["name"])
+    # ingredients = {key:value for (key,value) in recipe.items() if key.startswith('ingredient')}
+    # print( "ingredients:")
+    # for 
+    for key,value in recipe.items():
+        print(key, ": " , value)
+    return jsonify({'link':'google.com'})
+
 
 
 

@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Extract Recipe</title>
     <style>
+        ul,
+        ol {
+            padding: 0;
+        }
+
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f7f7f7;
@@ -74,7 +79,7 @@
             padding-right: 8px;
             padding: 8px;
         } */
-        .form-element {
+        .sortable-list-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -106,13 +111,14 @@
             cursor: pointer;
         }
 
-        .submit-image-button {
+        .submit-button {
             background-color: #03a9f4;
 
         }
 
         .add-button {
             background-color: #4caf50;
+            margin-left: 20px;
         }
 
         .remove-button {
@@ -153,6 +159,49 @@
             border: 2px dashed #4caf50;
             /* Highlight the textarea being dragged */
         }
+
+        .sortable-list .sortable-list-item {
+            list-style: none;
+            display: flex;
+            cursor: move;
+            align-items: center;
+            /* padding: 10px 13px; */
+            /* margin-bottom: 11px; */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+            /* border: 1px solid #ccc; */
+            /* justify-content: space-between; */
+        }
+
+        .sortable-list-item .details {
+            display: flex;
+            align-items: center;
+        }
+
+        .sortable-list-item .details img {
+            height: 43px;
+            width: 100%;
+            pointer-events: none;
+            margin-right: 12px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .sortable-list-item .details span {
+            font-size: 1.13rem;
+        }
+
+        .sortable-list-item i {
+            color: #474747;
+            font-size: 1.13rem;
+        }
+
+        .sortable-list-item.dragging {
+            opacity: 0.6;
+        }
+
+        .sortable-list-item.dragging :where(.details, i) {
+            opacity: 0;
+        }
     </style>
 </head>
 
@@ -169,7 +218,7 @@
                 <input type="checkbox" id="fakeCallCheckbox" name="fakeCall" checked=true>
                 Fake Chat GPT Call
             </label>
-            <button type="submit" class="submit-image-button">Process Image</button>
+            <button type="submit" class="submit-button">Process Image</button>
         </form>
 
         <div class="recipe-div" id="recipe-div">
@@ -197,7 +246,6 @@
         }
 
         function MaybeGetProperty(property, json) {
-            console.log(json)
             if (json.hasOwnProperty(property)) {
                 return json[property]
             }
@@ -225,6 +273,100 @@
         //     }
         //     parent.appendChild(textarea);
         // }
+        function createTextArea(name, contents, rows) {
+            var textarea = document.createElement('textarea');
+            textarea.value = contents;
+            textarea.rows = rows;
+            textarea.name = name;
+            return textarea;
+        }
+        function createLabel(title) {
+            var label = document.createElement('label');
+            label.textContent = title;
+            return label
+        }
+
+        function createLabeledTextArea(title, contents, rows) {
+            label = createLabel(title);
+            label.appendChild(createTextArea(title, contents, rows));
+            return label;
+        }
+        function createDeletableListItem(name, contents, rows) {
+            list_item = document.createElement('li');
+            list_item.classList.add('sortable-list-item');
+            list_item.style.display = 'flex'; // Use Flexbox for vertical alignment
+            list_item.style.alignItems = 'center';
+            list_item.draggable = true;
+
+            draggable_dots = document.createElement('img');
+            draggable_dots.src = 'http://fishpoopsoup.com/images/draggabledots.svg';
+            list_item.appendChild(draggable_dots);
+
+            var textarea = createTextArea(name, contents, rows)
+
+            list_item.appendChild(textarea);
+
+            var removeButton = document.createElement('button');
+            removeButton.classList.add('remove-button');
+            removeButton.type = 'button';
+            removeButton.textContent = '-';
+            removeButton.addEventListener('click', function () {
+                this.parentElement.parentElement.removeChild(this.parentNode);
+            });
+
+            list_item.appendChild(removeButton);
+
+            list_item.addEventListener("dragstart", function () {
+                // Adding dragging class to item after a delay
+                this.classList.add("dragging");
+                // setTimeout(() => this.classList.add("dragging"), 0);
+            });
+            // Removing dragging class from item on dragend event
+            list_item.addEventListener("dragend", function () { this.classList.remove("dragging"); });
+            return list_item
+        }
+
+        function createSortableList(title, entries) {
+            var list = document.createElement('ul');
+            list.classList.add('sortable-list');
+            list.id = title + "list";
+            var i = 0;
+            if (entries) {
+                for (var entry of entries) {
+                    list.appendChild(createDeletableListItem(title + i++, entry, 2));
+                }
+            }
+            label = createLabel(title);
+            label.appendChild(list);
+
+            var addButton = document.createElement('button');
+            addButton.classList.add('add-button');
+            addButton.type = 'button';
+            addButton.textContent = '+';
+            addButton.addEventListener('click', function () {
+                list.appendChild(createDeletableListItem(title + i++, '', 2));
+            });
+            label.appendChild(addButton);
+
+            list.addEventListener("dragover", function (e) {
+                e.preventDefault();
+                const items = this.querySelectorAll(".sortable-list-item");
+                const draggingItem = document.querySelector(".dragging");
+                // Getting all items except currently dragging and making array of them
+                let siblings = [...this.querySelectorAll(".sortable-list-item:not(.dragging)")];
+
+                // Finding the sibling after which the dragging item should be placed
+                let nextSibling = siblings.find(sibling => {
+                    return e.clientY + window.scrollY <= sibling.offsetTop + sibling.offsetHeight / 2;
+                });
+
+                // Inserting the dragging item before the found sibling
+                this.insertBefore(draggingItem, nextSibling);
+            });
+            list.addEventListener("dragenter", e => e.preventDefault());
+            return label;
+        }
+
         function addSingleFormElement(title, contents, parent, rows, draggable = false) {
             form_element = document.createElement('div');
             form_element.classList.add('form-element');
@@ -265,6 +407,7 @@
             parent.appendChild(form_element);
         }
 
+
         function addMultiFormElement(title, contents_list, parent, rows) {
             var label = document.createElement('label');
             label.textContent = title;
@@ -278,7 +421,7 @@
                 label.removeChild(addButton);
 
                 // Add a new textarea
-                addSingleFormElement('', '', label, rows, draggale=true);
+                addSingleFormElement('', '', label, rows, draggale = true);
 
                 // Re-append the button
                 label.appendChild(addButton);
@@ -293,15 +436,60 @@
 
             parent.appendChild(label);
         }
-
+        function serializeForm(form) {
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            console.log(data);
+            return data;
+        }
         function makeRecipeForm(recipe) {
             var form = document.createElement('form');
             form.classList.add('recipe-form');
 
-            addSingleFormElement('name', MaybeGetProperty('name', recipe), form, 3);
-            addSingleFormElement('description', MaybeGetProperty('description', recipe), form, 3);
-            addMultiFormElement('ingredients', MaybeGetProperty('ingredients', recipe), form, 2);
-            addMultiFormElement('steps', MaybeGetProperty('steps', recipe), form, 2);
+            form.appendChild(createLabeledTextArea('name', MaybeGetProperty('name', recipe), form, 3))
+            form.appendChild(createLabeledTextArea('description', MaybeGetProperty('description', recipe), form, 3))
+            form.appendChild(createLabeledTextArea('servings', MaybeGetProperty('servings', recipe), form, 3))
+            form.appendChild(createLabeledTextArea('total_time', MaybeGetProperty('total_time', recipe), form, 3))
+            form.appendChild(createSortableList('ingredients', MaybeGetProperty('ingredients', recipe)))
+            form.appendChild(createSortableList('steps', MaybeGetProperty('steps', recipe)))
+            var button = document.createElement('button');
+            button.classList.add('submit-button');
+            button.textContent = 'Process recipe';
+            button.style.width = "30%"
+            center = document.createElement('center');
+            center.appendChild(button);
+            form.appendChild(center);
+            form.addEventListener('submit', function (event) {
+                // showLoading();
+                event.preventDefault();
+
+                // Explicitly select the form
+                // formData = serializeForm(this);
+                formData = new FormData(this);
+
+                // var url = isFakeCall ? 'http://fishpoopsoup.com/extract_recipe/fake_process_image' : 'http://fishpoopsoup.com/extract_recipe/process_image';
+
+                fetch('http://fishpoopsoup.com/extract_recipe/process_recipe', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // document.getElementById('loading').style.display = 'none';
+                    })
+                    .catch(error => {
+                        document.getElementById('loading').style.display = 'none';
+                        console.error('Error parsing JSON:', error);
+                        document.getElementById('result').innerHTML = '<p>Error parsing JSON:' + error + '</p>';
+                    });
+            });
+
+
+            // addMultiFormElement('ingredients', MaybeGetProperty('ingredients', recipe), form, 2);
+            // addMultiFormElement('steps', MaybeGetProperty('steps', recipe), form, 2);
 
             return form;
         }
@@ -339,51 +527,7 @@
                 });
         });
 
-        function handleDragStart(e) {
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', null);
 
-            // Add a class to the dragging element
-            this.classList.add('dragging');
-        }
-
-        function handleDragOver(e) {
-            if (e.preventDefault) {
-                e.preventDefault();
-            }
-            e.dataTransfer.dropEffect = 'move';
-            return false;
-        }
-
-        function handleDrop(e) {
-            if (e.stopPropagation) {
-                e.stopPropagation(); // stops the browser from redirecting.
-            }
-
-            // Get the dragging element
-            var draggedTextarea = document.querySelector('.dragging');
-
-            // If there's a dragging element and it's not the drop target itself
-            if (draggedTextarea && draggedTextarea !== this) {
-                // Insert the dragging element before or after the drop target
-                var rect = this.getBoundingClientRect();
-                var isAfter = e.clientY > rect.top + rect.height / 2;
-
-                if (isAfter) {
-                    this.parentNode.insertBefore(draggedTextarea, this.nextElementSibling);
-                } else {
-                    this.parentNode.insertBefore(draggedTextarea, this);
-                }
-            }
-
-            // Remove the dragging class from all textareas
-            var textareas = document.querySelectorAll('textarea');
-            textareas.forEach(function (textarea) {
-                textarea.classList.remove('dragging');
-            });
-
-            return false;
-        }
     </script>
 </body>
 
