@@ -113,6 +113,10 @@
 
         }
 
+        .submit-button {
+            display: none;
+        }
+
         .add-button {
             background-color: #4caf50;
             margin-left: 20px;
@@ -137,17 +141,17 @@
             width: 75%;
         }
 
-        #recipeImage {
+        #recipe-image {
             width: 75%;
             align-self: center;
             margin: 0 auto;
-            display: block;
+            display: none;
             width: 100%;
             /* Allow the image to take up the full width of its container */
         }
 
-        #loading {
-            width: 75%;
+        .loading {
+            width: 50%;
             display: none;
             margin: 0 auto;
         }
@@ -261,7 +265,7 @@
 <body>
     <div class="container">
         <h1>Extract Recipe</h1>
-        <form enctype="multipart/form-data" action="/process" method="post" id="upload-form" class="upload-form">
+        <form enctype="multipart/form-data" id="upload-form" class="upload-form">
             <label for="image-input">
                 Select Image:
                 <input type="file" name="image" accept="image/*" id="image-input" onchange="previewImage(event)"
@@ -271,32 +275,102 @@
                 <input type="checkbox" id="fakeCallCheckbox" name="fakeCall" checked=true>
                 Fake Chat GPT Call
             </label>
-            <button type="submit" class="submit-button">Process Image</button>
+            <button type="submit" class="submit-button" id="submit-button">Process Image</button>
         </form>
 
         <div class="recipe-div" id="recipe-div">
-            <img id="loading" src="http://fishpoopsoup.com/images/pizza_loading.gif" alt="Loading">
+            <img id="loading-recipe" class="loading" src="http://fishpoopsoup.com/images/pizza_loading.gif"
+                alt="Loading">
             <div id="result"></div>
         </div>
 
         <div class="image-div" id="image-div">
-            <img id="recipeImage" alt="Recipe Image">
+            <img id="recipe-image" alt="Recipe Image">
+            <img id="loading-image" class="loading" src="http://fishpoopsoup.com/images/pizza_loading.gif"
+                alt="Loading">
         </div>
     </div>
 
     <script>
+        let compressedBlob;
+
+        function compressImage(imgToCompress, quality, max_retries = 30) {
+            let current_retries = 0;
+            let div = document.createElement('div');
+
+            function compressWithRetry() {
+                return new Promise((resolve, reject) => {
+                    const canvas = document.createElement("canvas");
+                    const context = canvas.getContext("2d");
+
+
+
+                    const width = imgToCompress.width;
+                    const height = imgToCompress.height;
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    context.drawImage(imgToCompress, 0, 0, width, height);
+
+                    canvas.toBlob(
+                        (blob) => {
+                            if (blob) {
+                                compressedBlob = blob;
+                                console.log("blob size: " + blob.size);
+                                imgToCompress.src = URL.createObjectURL(blob);
+                                resolve();
+                            } else {
+                                current_retries++;
+                                if (current_retries <= max_retries) {
+                                    console.log(`Retrying compression (attempt ${current_retries})...`);
+                                    // idk why this is necessary but it doesn't work on moblie without this line
+                                    document.getElementById('image-div').innerHTML += '';
+                                    compressWithRetry().then(resolve).catch(reject);
+                                } else {
+                                    reject(`maximum retries (${max_retries}) exceeded.`);
+                                }
+                            }
+                        },
+                        "image/jpeg",
+                        quality
+                    );
+                });
+            }
+
+            // Return the Promise from compressWithRetry
+            return compressWithRetry();
+        }
+
         function previewImage(event) {
+            document.getElementById('submit-button').style.display = "none";
+            document.getElementById('image-div').style.display = "block";
+            document.getElementById('loading-image').style.display = 'block';
             var input = event.target;
-            var preview = document.getElementById('recipeImage');
+            var preview = document.getElementById('recipe-image');
 
             var reader = new FileReader();
             reader.onload = function () {
                 preview.src = reader.result;
-                document.getElementById('image-div').style.display = "block";
+
+                // Call compressImage and wait for it to complete before showing the image
+                compressImage(preview, quality = .2)
+                    .then(() => {
+                        console.log("then");
+                        document.getElementById('loading-image').style.display = 'none';
+                        document.getElementById('recipe-image').style.display = "block";
+                        document.getElementById('submit-button').style.display = "block";
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        document.getElementById('loading-image').style.display = 'none';
+                        document.getElementById('image-div').innerHTML = '<p>Error compressing image:' + error + '</p>';
+
+                        // Handle error, e.g., show an alert to the user
+                    });
             };
             reader.readAsDataURL(input.files[0]);
         }
-
+        
         function MaybeGetProperty(property, json) {
             if (json.hasOwnProperty(property)) {
                 return json[property]
@@ -305,7 +379,7 @@
         }
         function makeLink(url) {
             var div = document.createElement('div');
-            var h2= document.createElement('h2');
+            var h2 = document.createElement('h2');
             h2.innerText = 'Link for mealie:';
             div.appendChild(h2);
             var container = document.createElement('container');
@@ -394,16 +468,16 @@
         }
 
         function showLoading() {
-            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loading-recipe').style.display = 'block';
         }
-
         document.getElementById('upload-form').addEventListener('submit', function (e) {
+            e.preventDefault();
             document.getElementById('result').innerHTML = '';
             document.getElementById('recipe-div').style.display = 'block';
             showLoading();
-            e.preventDefault();
 
-            var formData = new FormData(this);
+            var formData = new FormData();
+            formData.append("image", compressedBlob);
             var isFakeCall = document.getElementById('fakeCallCheckbox').checked;
 
             // Build the URL based on the checkbox status
@@ -416,12 +490,15 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('loading').style.display = 'none';
-                    // document.getElementById('result').innerHTML += '<p>' + data.recipe + '</p>';
+                    document.getElementById('loading-recipe').style.display = 'none';
+                    if (data.hasOwnProperty('error_message')) {
+                        document.getElementById('result').innerHTML = '<p>Error in python: ' + data.error_message + '</p>';
+                        return;
+                    }
                     document.getElementById('result').appendChild(makeRecipeDisplay(JSON.parse(data.recipe), data.recipe_link));
                 })
                 .catch(error => {
-                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('loading-recipe').style.display = 'none';
                     console.error('Error parsing JSON:', error);
                     document.getElementById('result').innerHTML = '<p>Error parsing JSON:' + error + '</p>';
                 });

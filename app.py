@@ -21,6 +21,7 @@ def process(extract_recipe):
     try:
         # Process the image using your Python script
         chat_response = extract_recipe(image_file)
+        print(chat_response)
         recipe= json.loads(chat_response)["choices"][0]["message"]["content"]
         recipe = recipe[recipe.find("{"):recipe.rfind("}")+1]
 
@@ -41,18 +42,9 @@ def process_image():
 
 @app.route('/extract_recipe/fake_process_image', methods=['POST'])
 def fake_process_image():
+    if 'image' not in request.files:
+        return jsonify({'error_message': 'No image provided in the request'})
     return process(fake_extract_recipe)
-
-@app.route('/extract_recipe/process_recipe', methods=['POST'])
-def process_recipe():
-    recipe=request.form.to_dict()
-    # print("name: ", recipe["name"])
-    # ingredients = {key:value for (key,value) in recipe.items() if key.startswith('ingredient')}
-    # print( "ingredients:")
-    # for 
-    for key,value in recipe.items():
-        print(key, ": " , value)
-    return jsonify({'link':'google.com'})
 
 
 
