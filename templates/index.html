@@ -370,7 +370,7 @@
             };
             reader.readAsDataURL(input.files[0]);
         }
-        
+
         function MaybeGetProperty(property, json) {
             if (json.hasOwnProperty(property)) {
                 return json[property]
@@ -478,13 +478,13 @@
 
             var formData = new FormData();
             formData.append("image", compressedBlob);
-            var isFakeCall = document.getElementById('fakeCallCheckbox').checked;
+            const advanced_options = {
+                'fake_call': String(document.getElementById('fakeCallCheckbox').checked),
+            };
+            formData.append("advanced_options", JSON.stringify(advanced_options));
 
-            // Build the URL based on the checkbox status
-            var url = isFakeCall ? 'http://fishpoopsoup.com/extract_recipe/fake_process_image' :
-                'http://fishpoopsoup.com/extract_recipe/process_image';
 
-            fetch(url, {
+            fetch('http://fishpoopsoup.com/extract_recipe/process_image', {
                 method: 'POST',
                 body: formData
             })
