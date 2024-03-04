@@ -75,10 +75,6 @@
             /* Add right margin to create space between textarea and button */
         }
 
-        /* .form-element {
-            padding-right: 8px;
-            padding: 8px;
-        } */
         .sortable-list-item {
             display: flex;
             align-items: center;
@@ -111,7 +107,8 @@
             cursor: pointer;
         }
 
-        .submit-button {
+        .submit-button,
+        .copy-link-button {
             background-color: #03a9f4;
 
         }
@@ -202,6 +199,62 @@
         .sortable-list-item.dragging :where(.details, i) {
             opacity: 0;
         }
+
+        .recipe-display {
+            text-align: left;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+        }
+
+        .recipe-display h2 {
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ddd;
+            /* Added a border between title and details */
+            padding-bottom: 10px;
+        }
+
+        .recipe-display p {
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .recipe-display ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 15px;
+        }
+
+        .recipe-display ul li {
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        #recipe-page-link {
+            color: #03a9f4;
+            font-weight: bold;
+            word-wrap: break-word;
+            margin: 8px 0;
+            margin-bottom: 15px;
+        }
+
+        .copy-link-button {
+            background-color: #03a9f4;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+            margin-left: 8px;
+        }
+
+        .copy-link-button:hover {
+            background-color: #0278ae;
+        }
     </style>
 </head>
 
@@ -222,7 +275,6 @@
         </form>
 
         <div class="recipe-div" id="recipe-div">
-            <h2><b>Recipe:</b></h2>
             <img id="loading" src="http://fishpoopsoup.com/images/pizza_loading.gif" alt="Loading">
             <div id="result"></div>
         </div>
@@ -251,247 +303,94 @@
             }
             return ''
         }
+        function makeLink(url) {
+            var div = document.createElement('div');
+            var h2= document.createElement('h2');
+            h2.innerText = 'Link for mealie:';
+            div.appendChild(h2);
+            var container = document.createElement('container');
+            container.style.display = 'flex';
+            container.style.flexDirection = 'row';
+            var p = document.createElement('p');
+            p.textContent = url;
+            p.id = 'recipe-page-link';
 
-        // function addSingleFormElement(title, contents, parent, rows, draggable=false) {
-        //     var textarea = document.createElement('textarea');
-        //     textarea.name = title;
-        //     textarea.value = contents;
-        //     textarea.rows = rows;
-        //     textarea.draggable = draggable; // Enable dragging
-        //     if (draggable){
-        //         textarea.classList.add('draggable');
-        //     }
-        //     textarea.addEventListener('dragstart', handleDragStart);
-        //     textarea.addEventListener('dragover', handleDragOver);
-        //     textarea.addEventListener('drop', handleDrop);
-        //     if (title) {
-        //         var label = document.createElement('label');
-        //         label.textContent = title;
-        //         label.appendChild(textarea);
-        //         parent.appendChild(label);
-        //         return;
-        //     }
-        //     parent.appendChild(textarea);
-        // }
-        function createTextArea(name, contents, rows) {
-            var textarea = document.createElement('textarea');
-            textarea.value = contents;
-            textarea.rows = rows;
-            textarea.name = name;
-            return textarea;
-        }
-        function createLabel(title) {
-            var label = document.createElement('label');
-            label.textContent = title;
-            return label
-        }
+            var button = document.createElement('button');
+            button.classList.add('copy-link-button');
+            button.textContent = '\u2398';
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                var textToCopy = document.getElementById('recipe-page-link').innerText;
+                var tempTextarea = document.createElement('textarea');
+                tempTextarea.value = textToCopy;
 
-        function createLabeledTextArea(title, contents, rows) {
-            label = createLabel(title);
-            label.appendChild(createTextArea(title, contents, rows));
-            return label;
-        }
-        function createDeletableListItem(name, contents, rows) {
-            list_item = document.createElement('li');
-            list_item.classList.add('sortable-list-item');
-            list_item.style.display = 'flex'; // Use Flexbox for vertical alignment
-            list_item.style.alignItems = 'center';
-            list_item.draggable = true;
+                // Append the textarea to the body
+                document.body.appendChild(tempTextarea);
 
-            draggable_dots = document.createElement('img');
-            draggable_dots.src = 'http://fishpoopsoup.com/images/draggabledots.svg';
-            list_item.appendChild(draggable_dots);
+                // Select and copy the text from the textarea
+                tempTextarea.select();
+                document.execCommand('copy');
 
-            var textarea = createTextArea(name, contents, rows)
+                // Remove the temporary textarea
+                document.body.removeChild(tempTextarea);
 
-            list_item.appendChild(textarea);
-
-            var removeButton = document.createElement('button');
-            removeButton.classList.add('remove-button');
-            removeButton.type = 'button';
-            removeButton.textContent = '-';
-            removeButton.addEventListener('click', function () {
-                this.parentElement.parentElement.removeChild(this.parentNode);
+                // Inform the user that the text has been copied
+                alert('Text has been copied to the clipboard: ' + textToCopy);
             });
-
-            list_item.appendChild(removeButton);
-
-            list_item.addEventListener("dragstart", function () {
-                // Adding dragging class to item after a delay
-                this.classList.add("dragging");
-                // setTimeout(() => this.classList.add("dragging"), 0);
-            });
-            // Removing dragging class from item on dragend event
-            list_item.addEventListener("dragend", function () { this.classList.remove("dragging"); });
-            return list_item
+            container.appendChild(p);
+            container.appendChild(button);
+            div.append(container);
+            return div;
         }
 
-        function createSortableList(title, entries) {
+        function makeSingleField(title, content) {
+            var div = document.createElement('div');
+            var strong = document.createElement('strong');
+            strong.innerText = title;
+            div.appendChild(strong);
+            div.innerHTML += ': ' + content;
+            return div;
+        }
+        function createListItem(content) {
+            var item = document.createElement('li');
+            var p = document.createElement('p');
+            p.innerText = content;
+            item.appendChild(p);
+            return item;
+        }
+        function makeList(title, entries) {
             var list = document.createElement('ul');
-            list.classList.add('sortable-list');
-            list.id = title + "list";
-            var i = 0;
             if (entries) {
                 for (var entry of entries) {
-                    list.appendChild(createDeletableListItem(title + i++, entry, 2));
+                    list.appendChild(createListItem(entry));
                 }
             }
-            label = createLabel(title);
-            label.appendChild(list);
-
-            var addButton = document.createElement('button');
-            addButton.classList.add('add-button');
-            addButton.type = 'button';
-            addButton.textContent = '+';
-            addButton.addEventListener('click', function () {
-                list.appendChild(createDeletableListItem(title + i++, '', 2));
-            });
-            label.appendChild(addButton);
-
-            list.addEventListener("dragover", function (e) {
-                e.preventDefault();
-                const items = this.querySelectorAll(".sortable-list-item");
-                const draggingItem = document.querySelector(".dragging");
-                // Getting all items except currently dragging and making array of them
-                let siblings = [...this.querySelectorAll(".sortable-list-item:not(.dragging)")];
-
-                // Finding the sibling after which the dragging item should be placed
-                let nextSibling = siblings.find(sibling => {
-                    return e.clientY + window.scrollY <= sibling.offsetTop + sibling.offsetHeight / 2;
-                });
-
-                // Inserting the dragging item before the found sibling
-                this.insertBefore(draggingItem, nextSibling);
-            });
-            list.addEventListener("dragenter", e => e.preventDefault());
-            return label;
-        }
-
-        function addSingleFormElement(title, contents, parent, rows, draggable = false) {
-            form_element = document.createElement('div');
-            form_element.classList.add('form-element');
-            form_element.style.display = 'flex'; // Use Flexbox for vertical alignment
-            form_element.style.alignItems = 'center';
-
-            var textarea = document.createElement('textarea');
-            textarea.name = title;
-            textarea.value = contents;
-            textarea.rows = rows;
-
-            if (title) {
-                var label = document.createElement('label');
-                label.textContent = title;
-                label.appendChild(textarea);
-                form_element.appendChild(label);
-            } else {
-                form_element.appendChild(textarea);
-            }
-
-            if (draggable) {
-                form_element.draggable = true;
-                form_element.classList.add('draggable');
-                var removeButton = document.createElement('button');
-                removeButton.classList.add('remove-button');
-                removeButton.type = 'button';
-                removeButton.textContent = '-';
-                removeButton.addEventListener('click', function () {
-                    // Remove the form_element
-                    parent.removeChild(removeButton.parentNode);
-                });
-                form_element.appendChild(removeButton);
-                form_element.addEventListener('dragstart', handleDragStart);
-                form_element.addEventListener('dragover', handleDragOver);
-                form_element.addEventListener('drop', handleDrop);
-            }
-
-            parent.appendChild(form_element);
-        }
-
-
-        function addMultiFormElement(title, contents_list, parent, rows) {
-            var label = document.createElement('label');
+            var label = document.createElement('h2');
             label.textContent = title;
-
-            var addButton = document.createElement('button');
-            addButton.classList.add('add-button');
-            addButton.type = 'button';
-            addButton.textContent = '+';
-            addButton.addEventListener('click', function () {
-                // Temporarily remove the button
-                label.removeChild(addButton);
-
-                // Add a new textarea
-                addSingleFormElement('', '', label, rows, draggale = true);
-
-                // Re-append the button
-                label.appendChild(addButton);
-            });
-
-
-            for (var contents of contents_list) {
-                addSingleFormElement('', contents, label, rows, true);
+            var div = document.createElement('div');
+            div.appendChild(label);
+            div.appendChild(list);
+            return div;
+        }
+        function makeRecipeDisplay(recipe, recipe_link) {
+            var display = document.createElement('div');
+            display.classList.add('recipe-display');
+            display.appendChild(makeLink(recipe_link));
+            var name = document.createElement('h2');
+            name_str = MaybeGetProperty('name', recipe);
+            name.innerText = name_str ? name_str : '<I> Couln\t find name </I>';
+            display.appendChild(name);
+            for (var field of ['description', 'total_time', 'servings']) {
+                display.appendChild(makeSingleField(field, MaybeGetProperty(field, recipe)));
+            }
+            for (var field of ['ingredients', 'steps']) {
+                display.appendChild(makeList(field, MaybeGetProperty(field, recipe)));
             }
 
-            label.appendChild(addButton);
-
-            parent.appendChild(label);
-        }
-        function serializeForm(form) {
-            const formData = new FormData(form);
-            const data = {};
-            formData.forEach((value, key) => {
-                data[key] = value;
-            });
-            console.log(data);
-            return data;
-        }
-        function makeRecipeForm(recipe) {
-            var form = document.createElement('form');
-            form.classList.add('recipe-form');
-
-            form.appendChild(createLabeledTextArea('name', MaybeGetProperty('name', recipe), form, 3))
-            form.appendChild(createLabeledTextArea('description', MaybeGetProperty('description', recipe), form, 3))
-            form.appendChild(createLabeledTextArea('servings', MaybeGetProperty('servings', recipe), form, 3))
-            form.appendChild(createLabeledTextArea('total_time', MaybeGetProperty('total_time', recipe), form, 3))
-            form.appendChild(createSortableList('ingredients', MaybeGetProperty('ingredients', recipe)))
-            form.appendChild(createSortableList('steps', MaybeGetProperty('steps', recipe)))
-            var button = document.createElement('button');
-            button.classList.add('submit-button');
-            button.textContent = 'Process recipe';
-            button.style.width = "30%"
-            center = document.createElement('center');
-            center.appendChild(button);
-            form.appendChild(center);
-            form.addEventListener('submit', function (event) {
-                // showLoading();
-                event.preventDefault();
-
-                // Explicitly select the form
-                // formData = serializeForm(this);
-                formData = new FormData(this);
-
-                // var url = isFakeCall ? 'http://fishpoopsoup.com/extract_recipe/fake_process_image' : 'http://fishpoopsoup.com/extract_recipe/process_image';
-
-                fetch('http://fishpoopsoup.com/extract_recipe/process_recipe', {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        // document.getElementById('loading').style.display = 'none';
-                    })
-                    .catch(error => {
-                        document.getElementById('loading').style.display = 'none';
-                        console.error('Error parsing JSON:', error);
-                        document.getElementById('result').innerHTML = '<p>Error parsing JSON:' + error + '</p>';
-                    });
-            });
 
 
-            // addMultiFormElement('ingredients', MaybeGetProperty('ingredients', recipe), form, 2);
-            // addMultiFormElement('steps', MaybeGetProperty('steps', recipe), form, 2);
 
-            return form;
+            return display;
         }
 
         function showLoading() {
@@ -508,7 +407,8 @@
             var isFakeCall = document.getElementById('fakeCallCheckbox').checked;
 
             // Build the URL based on the checkbox status
-            var url = isFakeCall ? 'http://fishpoopsoup.com/extract_recipe/fake_process_image' : 'http://fishpoopsoup.com/extract_recipe/process_image';
+            var url = isFakeCall ? 'http://fishpoopsoup.com/extract_recipe/fake_process_image' :
+                'http://fishpoopsoup.com/extract_recipe/process_image';
 
             fetch(url, {
                 method: 'POST',
@@ -518,7 +418,7 @@
                 .then(data => {
                     document.getElementById('loading').style.display = 'none';
                     // document.getElementById('result').innerHTML += '<p>' + data.recipe + '</p>';
-                    document.getElementById('result').appendChild(makeRecipeForm(JSON.parse(data.recipe)));
+                    document.getElementById('result').appendChild(makeRecipeDisplay(JSON.parse(data.recipe), data.recipe_link));
                 })
                 .catch(error => {
                     document.getElementById('loading').style.display = 'none';

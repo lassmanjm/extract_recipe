@@ -25,7 +25,7 @@ def process(extract_recipe):
         recipe = recipe[recipe.find("{"):recipe.rfind("}")+1]
 
         # Send the save path in the response
-        return jsonify({'message': 'Image processed successfully', 'recipe': recipe})
+        return jsonify({'message': 'Image processed successfully', 'recipe': recipe, 'recipe_link':'http://fishpoopsoup.com'})
         
     except Exception as e:
         return jsonify({'message': 'Error processing image: %s'%(str(e))}, 500)
@@ -34,14 +34,6 @@ def process(extract_recipe):
 def index():
     return render_template('index.html')
 
-# @app.route('/extract_recipetest_drag')
-# def index():
-#     return render_template('test_drag.html')
-# def extract_json_from_response(respone
-
-# @app.route('/extract_recipe/<string:recipe_json>')
-# def recipe(recipe_json):
-#     return render_template("recipe_template.html", recipe=recipe_json)
 
 @app.route('/extract_recipe/process_image', methods=['POST'])
 def process_image():
