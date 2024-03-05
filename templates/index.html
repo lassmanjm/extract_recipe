@@ -56,17 +56,6 @@
             /* Add margin to separate label from textarea */
         }
 
-        /* textarea {
-            width: 100%;
-            /* Make the textarea take up 100% of its container width */
-        /* box-sizing: border-box; */
-        /* Include padding and border in the width calculation */
-        /* padding: 8px; */
-        /* padding-right: 8px; */
-        /* resize: vertical; */
-        /* Allow vertical resizing of the textarea */
-        /* } */
-
         textarea {
             width: 100%;
             box-sizing: border-box;
@@ -259,6 +248,52 @@
         .copy-link-button:hover {
             background-color: #0278ae;
         }
+
+        details {
+            display: inline-block;
+            border-radius: 5px;
+            background-color: #2f9cf5;
+            margin-bottom: 10px;
+        }
+
+        summary {
+            list-style: none;
+            display: inline-flex;
+            align-items: center;
+            padding: 10px;
+            font-weight: bold;
+            background-color: #a3d4fb;
+            color: #30353b;
+            border-radius: 5px;
+        }
+
+        summary::after {
+            content: '';
+            width: 18px;
+            height: 10px;
+            background: url('http://fishpoopsoup.com/images/extract_recipe/details-arrow.svg') no-repeat;
+            background-size: cover;
+            margin-left: .75em;
+            transition: 0.2s;
+        }
+
+        details[open]>summary::after {
+            transform: rotate(180deg);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details[open] summary {
+            border-radius: 5px 5px 0 0;
+        }
+
+        .upload-form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -266,15 +301,24 @@
     <div class="container">
         <h1>Extract Recipe</h1>
         <form enctype="multipart/form-data" id="upload-form" class="upload-form">
-            <label for="image-input">
-                Select Image:
-                <input type="file" name="image" accept="image/*" id="image-input" onchange="previewImage(event)"
-                    required>
-            </label>
-            <label for="fakeCallCheckbox">
-                <input type="checkbox" id="fakeCallCheckbox" name="fakeCall" checked=true>
-                Fake Chat GPT Call
-            </label>
+            <div class="upload-form-container">
+                <label for="image-input">
+                    Select Image:
+                    <input type="file" name="image" accept="image/*" id="image-input" onchange="previewImage(event)"
+                        required>
+                </label>
+
+                <details>
+                    <summary class="details-summary">Advanced Options</summary>
+                    <div class="checkbox-div">
+                        <label for="fakeCallCheckbox">
+                            <input type="checkbox" id="fakeCallCheckbox" name="fakeCall" checked=true>
+                            Fake Chat GPT Call
+                        </label>
+                    </div>
+                </details>
+
+            </div>
             <button type="submit" class="submit-button" id="submit-button">Process Image</button>
         </form>
 
