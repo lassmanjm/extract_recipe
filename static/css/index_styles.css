@@ -1,0 +1,277 @@
+ul,
+ol {
+    padding: 0;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f7f7f7;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: 20px;
+}
+
+h1 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.upload-form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 75%;
+}
+
+label {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #333;
+    display: block;
+    margin-bottom: 10px;
+}
+
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    margin-right: 8px;
+}
+
+.sortable-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.draggable {
+    cursor: move;
+}
+
+input[type="file"] {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#fakeCallCheckbox {
+    margin-top: 10px;
+}
+
+button {
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.submit-button,
+.copy-link-button {
+    background-color: #03a9f4;
+
+}
+
+.submit-button {
+    display: none;
+}
+
+.add-button {
+    background-color: #4caf50;
+    margin-left: 20px;
+}
+
+.remove-button {
+    background-color: #f44336;
+}
+
+.recipe-div,
+.image-div {
+    flex: 1;
+    text-align: left;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    align-items: left;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: none;
+    margin-bottom: 20px;
+    justify-content: center;
+    width: 75%;
+}
+
+#recipe-image {
+    width: 75%;
+    align-self: center;
+    margin: 0 auto;
+    display: none;
+    width: 100%;
+}
+
+.loading {
+    width: 50%;
+    display: none;
+    margin: 0 auto;
+}
+
+.dragging {
+    border: 2px dashed #4caf50;
+}
+
+.sortable-list .sortable-list-item {
+    list-style: none;
+    display: flex;
+    cursor: move;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.sortable-list-item .details {
+    display: flex;
+    align-items: center;
+}
+
+.sortable-list-item .details img {
+    height: 43px;
+    width: 100%;
+    pointer-events: none;
+    margin-right: 12px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.sortable-list-item .details span {
+    font-size: 1.13rem;
+}
+
+.sortable-list-item i {
+    color: #474747;
+    font-size: 1.13rem;
+}
+
+.sortable-list-item.dragging {
+    opacity: 0.6;
+}
+
+.sortable-list-item.dragging :where(.details, i) {
+    opacity: 0;
+}
+
+.recipe-display {
+    text-align: left;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
+
+.recipe-display h2 {
+    color: #333;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.recipe-display p {
+    color: #555;
+    margin-bottom: 12px;
+}
+
+.recipe-display ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 15px;
+}
+
+.recipe-display ul li {
+    margin-bottom: 8px;
+    color: #666;
+}
+
+#recipe-page-link {
+    color: #03a9f4;
+    font-weight: bold;
+    word-wrap: break-word;
+    margin: 8px 0;
+    margin-bottom: 15px;
+}
+
+.copy-link-button {
+    background-color: #03a9f4;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin-left: 8px;
+}
+
+.copy-link-button:hover {
+    background-color: #0278ae;
+}
+
+details {
+    display: inline-block;
+    border-radius: 5px;
+    background-color: #2f9cf5;
+    margin-bottom: 10px;
+}
+
+summary {
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    padding: 10px;
+    font-weight: bold;
+    background-color: #a3d4fb;
+    color: #30353b;
+    border-radius: 5px;
+}
+
+summary::after {
+    content: '';
+    width: 18px;
+    height: 10px;
+    background: url('http://fishpoopsoup.com/images/extract_recipe/details-arrow.svg') no-repeat;
+    background-size: cover;
+    margin-left: .75em;
+    transition: 0.2s;
+}
+
+details[open]>summary::after {
+    transform: rotate(180deg);
+}
+
+summary::-webkit-details-marker {
+    display: none;
+}
+
+details[open] summary {
+    border-radius: 5px 5px 0 0;
+}
+
+.upload-form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

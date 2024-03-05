@@ -1,0 +1,9 @@
+can you take the recipe in the photo and produce a JSON with the following fields if they can be found or inferred?
+    -name (string)
+    -description (string)
+    -servings (string)
+    -total_time (string in the format "{{minutes}}M{{hours}}H")
+    -ingredients (array of strings)
+    -steps (array of strings)
+
+    note: total _time is the summation of cooking time and prep time if it is not mentioned directly. Print only the JSON itself, no other text. The first character you return should be the opening '{' of the json and the last should be the closing '}' of the json. 
